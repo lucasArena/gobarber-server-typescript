@@ -6,6 +6,8 @@ import Appointment from '../models/Appointment';
 import AppointmentRepository from '../repositories/AppointmentsRepository';
 import UsersRepository from '../repositories/UsersRepository';
 
+import AppError from '../errors/AppError';
+
 interface Request {
   provider_id: string;
   date: Date;
@@ -19,13 +21,13 @@ class CreateAppointmentService {
     const validUuid = isUuid(provider_id);
 
     if (!validUuid) {
-      throw Error('Invalid uuid');
+      throw new AppError('Invalid uuid', 400);
     }
 
     const providerExists = await usersRepository.findOne({ id: provider_id });
 
     if (!providerExists) {
-      throw Error('Provider does not exists');
+      throw new AppError('Provider does not exists', 401);
     }
 
     const appointmentDate = startOfHour(date);
@@ -35,7 +37,7 @@ class CreateAppointmentService {
     );
 
     if (findAppointmentInSameDate) {
-      throw Error('This appointment is already booked');
+      throw new AppError('This appointment is already booked', 400);
     }
 
     const appointment = appointmentsRepository.create({

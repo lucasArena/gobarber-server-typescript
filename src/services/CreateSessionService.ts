@@ -5,6 +5,8 @@ import { sign } from 'jsonwebtoken';
 import UserRepository from '../repositories/UsersRepository';
 import User from '../models/User';
 
+import AppError from '../errors/AppError';
+
 import authConfig from '../config/auth';
 
 interface Request {
@@ -24,11 +26,11 @@ class CreateSessionService {
     const user = await userRepository.findOne({ email });
 
     if (!user) {
-      throw Error('Incorrect email/password combination');
+      throw new AppError('Incorrect email/password combination', 401);
     }
 
     if (!(await compare(password, user.password))) {
-      throw Error('Incorrect email/password combination');
+      throw new AppError('Incorrect email/password combination', 401);
     }
 
     const token = sign({}, authConfig.jwt.secret, {

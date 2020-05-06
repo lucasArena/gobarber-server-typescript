@@ -33,10 +33,16 @@
         "js": "never",
         "ts": "never"
       }
-   ]
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "_"
+      }
+    ]
   },
   "settings": {
-    "import/resolver" : {
+    "import/resolver": {
       "typescript": {}
     }
   }
