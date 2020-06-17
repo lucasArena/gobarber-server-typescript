@@ -1,4 +1,4 @@
-import { startOfHour } from 'date-fns';
+import { startOfHour, isBefore, parse, getHours } from 'date-fns';
 import { isUuid } from 'uuidv4';
 import { inject, injectable } from 'tsyringe';
 
@@ -9,6 +9,7 @@ import IAppointmentRepository from '../repositories/IAppointmentRepository';
 
 interface IRequest {
   provider_id: string;
+  user_id: string;
   date: Date;
 }
 
@@ -21,7 +22,27 @@ class CreateAppointmentService {
     private usersRepository: IUserRepository,
   ) { }
 
-  public async execute({ date, provider_id }: IRequest): Promise<Appointment> {
+  public async execute({
+    date,
+    provider_id,
+    user_id,
+  }: IRequest): Promise<Appointment> {
+    const appointmentDate = startOfHour(date);
+
+    if (isBefore(appointmentDate, Date.now())) {
+      throw new AppError('You can not book a appointment in a past date');
+    }
+
+    if (user_id === provider_id) {
+      throw new AppError('You can not create a appointment with yourself');
+    }
+
+    if (getHours(appointmentDate) < 8 || getHours(appointmentDate) > 17) {
+      throw new AppError(
+        'You can only create appointments between 8 a.m and 17 p.m',
+      );
+    }
+
     const validUuid = isUuid(provider_id);
 
     if (!validUuid) {
@@ -34,8 +55,6 @@ class CreateAppointmentService {
       throw new AppError('Provider does not exists', 401);
     }
 
-    const appointmentDate = startOfHour(date);
-
     const findAppointmentInSameDate = await this.appointmentsRepository.findByDate(
       appointmentDate,
     );
@@ -46,6 +65,7 @@ class CreateAppointmentService {
 
     const appointment = await this.appointmentsRepository.create({
       provider_id,
+      user_id,
       date: appointmentDate,
     });
 
