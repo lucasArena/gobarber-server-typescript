@@ -1,10 +1,12 @@
-import { startOfHour, isBefore, parse, getHours } from 'date-fns';
+import { startOfHour, isBefore, getHours, format } from 'date-fns';
 import { isUuid } from 'uuidv4';
 import { inject, injectable } from 'tsyringe';
 
 import Appointment from '@modules/appointments/infra/typeorm/entities/Appointment';
 import AppError from '@shared/errors/AppError';
 import IUserRepository from '@modules/users/repositories/IUserRepository';
+import INotificationsRepository from '@modules/notifications/repositories/INotificationsRepository';
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
 import IAppointmentRepository from '../repositories/IAppointmentRepository';
 
 interface IRequest {
@@ -18,8 +20,13 @@ class CreateAppointmentService {
   constructor(
     @inject('AppointmentRepository')
     private appointmentsRepository: IAppointmentRepository,
+    @inject('NotificationsRepository')
+    private notificationsRepository: INotificationsRepository,
     @inject('UsersRepository')
     private usersRepository: IUserRepository,
+
+    @inject('CacheProvider')
+    private cacheProvider: ICacheProvider,
   ) { }
 
   public async execute({
@@ -68,6 +75,20 @@ class CreateAppointmentService {
       user_id,
       date: appointmentDate,
     });
+
+    const dateFormated = format(appointmentDate, "dd//MM/yyyy 'às' HH:mm'h'");
+
+    await this.notificationsRepository.create({
+      receipt_id: provider_id,
+      content: `Novo agendamento para ${dateFormated}`,
+    });
+
+    await this.cacheProvider.invalidate(
+      `provider-appointments:${provider_id}:${format(
+        appointmentDate,
+        'yyyy-M-d',
+      )}`,
+    );
 
     return appointment;
   }

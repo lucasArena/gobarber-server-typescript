@@ -29,7 +29,6 @@ class UsersRepository implements IUserRepository {
   }
 
   public async findbyEmail(email: string): Promise<User | undefined> {
-    // console.log('findByEmail', this.fakeUserRepository);
     const user = this.fakeUserRepository.find(u => u.email === email);
     return user;
   }
@@ -39,7 +38,6 @@ class UsersRepository implements IUserRepository {
 
     Object.assign(user, { id: uuid() }, userData);
     this.fakeUserRepository.push(user);
-    // console.log('create', this.fakeUserRepository);
     return user;
   }
 
