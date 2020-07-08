@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { getHours, isAfter } from 'date-fns';
 
+import AppError from '@shared/errors/AppError';
 import IAppointmentRepository from '../repositories/IAppointmentRepository';
 
 interface IRequest {
@@ -36,6 +37,11 @@ class ListProviderDayAvailabilityService {
         provider_id,
       },
     );
+
+    if (!day || !month || !year) {
+      throw new AppError('Day/month/year not provided', 400);
+    }
+
     const hourStart = 8;
 
     const eachHourArray = Array.from(
@@ -51,7 +57,6 @@ class ListProviderDayAvailabilityService {
       );
 
       const compareDate = new Date(year, month - 1, day, hour);
-
       return {
         hour,
         available: !hasAppointments && isAfter(compareDate, currentDate),

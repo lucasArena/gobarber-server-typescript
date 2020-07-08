@@ -18,6 +18,9 @@ providersRouter.get(
   '/:provider_id/day-availability',
   celebrate({
     [Segments.BODY]: {
+      day: Joi.number().required(),
+      month: Joi.number().required(),
+      year: Joi.number().required(),
       provider_id: Joi.string().uuid().required(),
     },
   }),
@@ -29,6 +32,8 @@ providersRouter.get(
   celebrate({
     [Segments.BODY]: {
       provider_id: Joi.string().uuid().required(),
+      month: Joi.number().required(),
+      year: Joi.number().required(),
     },
   }),
   provideMonthAvailabilityController.index,
