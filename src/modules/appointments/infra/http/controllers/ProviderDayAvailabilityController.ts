@@ -7,7 +7,6 @@ export default class ProvideDayAvailabilityController {
   public async index(request: Request, response: Response): Promise<Response> {
     const { day, month, year } = request.query;
     const { provider_id } = request.params;
-
     const listProviderDayAvailabilityService = container.resolve(
       ListProviderDayAvailabilityService,
     );
