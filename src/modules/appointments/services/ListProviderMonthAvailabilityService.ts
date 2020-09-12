@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import { getDaysInMonth, getDate, isAfter } from 'date-fns';
+import { getDaysInMonth, getDate, isAfter, endOfDay } from 'date-fns';
 
 import IAppointmentRepository from '../repositories/IAppointmentRepository';
 
@@ -48,7 +48,7 @@ class ListProviderMonthAvailabitityService {
         return getDate(appointment.date) === day;
       });
 
-      const compareDate = new Date(year, month, day);
+      const compareDate = endOfDay(new Date(year, month - 1, day));
 
       return {
         day,
